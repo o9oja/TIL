@@ -1,21 +1,29 @@
-```jsx
-var mysql      = require('mysql');
+- 3 Tier Architecture 를 이해한다.
 
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'me',
-  password : 'secret',
-  database : 'my_db'
-});
+- 영속성의 개념을 이해하고, 데이터베이스의 필요성을 인지한다. 
 
-connection.connect(); 
+영속성(persistence)은 데이터를 생성한 프로그램의 실행이 종료되더라도 사라지지 않는 데이터의 특성을 의미한다. 영속성은 파일 시스템, 관계형 테이터베이스 혹은 객체 데이터베이스 등을 활용하여 구현한다. 영속성을 갖지 않는 데이터는 단지 메모리에서만 존재하기 때문에 프로그램을 종료하면 모두 잃어버리게 된다. 결국 영속성은 특정 데이터 구조를 이전 상태로 복원할 수 있게 해주어 프로그램의 종료와 재개를 자유롭게 해준다.
 
-connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-  if (error) throw error;
-  console.log('The solution is: ', results[0].solution);
-});
- 
-connection.end();
-```
+- 데이터베이스 종류를 이해한다.
 
-이런 식으로 모듈을 사용한다고 예제가 나와있다.
+- 관계형 데이터베이스와 NoSQL의 차이를 이해한다.
+
+- 관계형 데이터베이스 및 NoSQL이 어떤 경우에 적합한지 이해한다.
+
+- SQL 주요 문법을 이해할 수 있다.
+
+- 조회, 삽입, 갱신, 삭제 구문을 자유자재로 사용할 수 있다.
+
+- 조회 시 다양한 조건을 걸어 원하는 정보만 조회할 수 있다.
+
+- 통계를 위한 쿼리를 만들 수 있다.
+
+- 스키마 디자인을 할 수 있다.
+
+- 앱에 필요한 테이블과 필드, 그리고 관계를 부여할 수 있다.
+
+- 1:N, N:N 관계를 이해하고, 데이터베이스에서 테이블을 조작할 수 있다.
+
+- Foreign Key, Primary Key에 대해 이해할 수 있다.
+
+데이터베이스의 기본 개념을 어느 정도 이해한 것 같다.
