@@ -1,29 +1,106 @@
-- 3 Tier Architecture 를 이해한다.
+# 중복순열
 
-- 영속성의 개념을 이해하고, 데이터베이스의 필요성을 인지한다. 
+```jsx
+let result = [];
+let arr = [1, 2, 3]
+for(let i = 0; i < arr.length; i++){
+  for(let j = 0; j < arr.length; j++){
+    for(let k = 0; k < arr.length; k++){
+      result.push([arr[i], arr[j], arr[k]]);
+    }
+  }
+}
+console.log(result)
+```
+반복문만 사용해도 중복순열을 구할 수 있다. 근데 배열에 10개의 요소를 담고있고, 중복가능한 10자리 수를 만든다고 가정하면 10중 반복문을 써야할 것이다. 그래서 이것을 재귀로 만들어 준다면 좀 더 간결하게 만들어 줄 수 있을 뿐만 아니라, 배열과 자릿수가 동적으로 변하는 경우에도 중복순열을 구해낼 수 있을 것이다.
 
-영속성(persistence)은 데이터를 생성한 프로그램의 실행이 종료되더라도 사라지지 않는 데이터의 특성을 의미한다. 영속성은 파일 시스템, 관계형 테이터베이스 혹은 객체 데이터베이스 등을 활용하여 구현한다. 영속성을 갖지 않는 데이터는 단지 메모리에서만 존재하기 때문에 프로그램을 종료하면 모두 잃어버리게 된다. 결국 영속성은 특정 데이터 구조를 이전 상태로 복원할 수 있게 해주어 프로그램의 종료와 재개를 자유롭게 해준다.
+```jsx
+let result = [];
 
-- 데이터베이스 종류를 이해한다.
+//bucket은 조합을 담아낼 일회성 그릇이라고 생각하면 된다.
+function multiPermutation(arr, n, bucket) {
+  if(n === 0) { // 탈출조건
+    result.push(bucket);
+    return;
+  }
+  for(let i = 0; i < arr.length; i++){
+    multiPermutation(arr, n - 1, bucket.concat(arr[i]))
+  }
+  return result;
+}
 
-- 관계형 데이터베이스와 NoSQL의 차이를 이해한다.
+multiPermutation([1,2,3], 3, []);
+```
 
-- 관계형 데이터베이스 및 NoSQL이 어떤 경우에 적합한지 이해한다.
+# 순열
+```jsx
+let result = [];
+let arr = [1, 2, 3]
+for(let i = 0; i < arr.length; i++){
+  for(let j = 0; j < arr.length; j++){
+    for(let k = 0; k < arr.length; k++){
+      if(i === j || j ===k || k === i) continue;
+      result.push([arr[i], arr[j], arr[k]]);
+    }
+  }
+}
+console.log(result)
+```
+순열은 중복이 되면 안되기에 i, j, k가 같을 때는 넘기고 진행을 시킨다. 그럼 중복되는 부분이 사라지게 될 것이다. 그럼 이것도 재귀로 다시 구현해보자.
 
-- SQL 주요 문법을 이해할 수 있다.
+```jsx
+let result = [];
+function permutation(arr, n, bucket){
+  if(n === 0){
+    result.push(bucket);
+    return;
+  }
+  
+  for(let i = 0; i < arr.length; i++){
+    let rest = arr.slice();
+    let pick = rest.splice(i, 1);
+    permutation(rest, n - 1, bucket.concat(pick));
+  }
+  return result
+}
 
-- 조회, 삽입, 갱신, 삭제 구문을 자유자재로 사용할 수 있다.
+permutation([1,2,3], 3, []);
+```
 
-- 조회 시 다양한 조건을 걸어 원하는 정보만 조회할 수 있다.
+다시 재귀에 넣어서 돌릴 배열을 rest라고 만들어 arr배열을 복사해주고, 거기서 한 요소를 고를 때 rest를 splice해줘서 그 배열에서 pick된 요소를 제거해준다. 그럼 재귀가 돌때 계속 선택된 요소는 빠진 상태인 배열이 인자로 들어가 중복되는 요소가 없는 조합을 만들어내게 된다.
 
-- 통계를 위한 쿼리를 만들 수 있다.
+# 조합
 
-- 스키마 디자인을 할 수 있다.
+```jsx
+let result = [];
+let arr = [1,2,3];
 
-- 앱에 필요한 테이블과 필드, 그리고 관계를 부여할 수 있다.
+for(let i = 0; i < arr.length; i++){
+  for(let j = i + 1; j < arr.length; j++){
+    result.push([arr[i], arr[j]])
+  }
+}
+console.log(result);
+```
 
-- 1:N, N:N 관계를 이해하고, 데이터베이스에서 테이블을 조작할 수 있다.
+위 코드의 반복문에서 j에 선언을 해준 것을 보면, i에서 사용된 것을 사용하지 않게 하기 위해서 j = i + 1을 해준 것이다. 그럼 이것도 재귀로 구현을 해보자.
 
-- Foreign Key, Primary Key에 대해 이해할 수 있다.
+```jsx
+let result = [];
+function combination(arr, n, bucket){
+  if(n === 0){
+    result.push(bucket);
+    return;
+  }
+  
+  for(let i = 0; i < arr.length; i++){
+    let pick = arr[i];
+    let rest = arr.slice(i + 1);
+    combination(rest, n - 1, bucket.concat(pick));
+  }
+  return result;
+}
 
-데이터베이스의 기본 개념을 어느 정도 이해한 것 같다.
+combination([1,2,3], 2, []);
+```
+조합은 순열과는 다르게 순서가 달라고 같은것이라고 취급하기 때문에 pick된 것만 빼내는것 뿐만 아니라 한번 빼내면 다시 넣지 않아야 한다. 그래서 rest배열을 하나씩 줄여나가 주는 것이다.
