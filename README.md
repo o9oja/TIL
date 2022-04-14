@@ -1,141 +1,26 @@
-# ORM 이란 ?
-자바스크립트 객체와 데이터를 1:1로 맵핑해주는 도구
+NoSQL Database
 
-# Sequelize를 쓰는 이유
-자바스크립트 코드만 쓰면 시퀄라이즈가 알아서 SQL로 바꿔준다
-SQL언어를 쓰지 않아도 되기 때문에 자바스크립트 문법으로만 데이터베이스를 조작할 수 있다
-MYSQL이외에 Maria, MSSQL 등등 다른 데이터베이스와도 호환 된다
--> 하나의 자바스크립트 코드로 다양한 데이터베이스와 상호작용이 가능하다
+1. 비구조적인 대용량의 데이터를 저장하는 경우
 
-## 1. 초기 설정: sequelize 및 sequelize-cli 설치
-Sequelize ORM 공식 사이트를 통해 Sequelize를 설치
+NoSQL 데이터베이스는 관계에 중점을 둔 SQL 데이터베이스보다 자유로운 형태로 데이터를 저장할 수 있으므로 필요에 따라서 새로운 데이터 유형을 추가할 수 있습니다. 소프트웨어 개발에 정형화되지 않은 많은 양의 데이터가 필요한 경우, NoSQL이 효율적일 수 있습니다.
 
-```jsx
-$ npm install --save sequelize
-```
-Sequelize - Migrations 문서를 통해 sequelize-cli 를 설치 (Sequelize 사용할 수 있게 해주는 패키지)
+2. 클라우드 컴퓨팅 및 저장 공간을 최대한 활용하는 경우
 
-```jsx
-npm install --save-dev sequelize-cli
-```
-Project bootstrapping
+NoSQL 데이터베이스는 데이터베이스를 클라우드 기반으로 쉽게 분리할 수 있도록 지원하여, 저장 공간을 효율적으로 사용합니다. 시스템이 커지면서 DB를 증설해야 하는 시점이 오면, SQL 데이터베이스에서는 수직적 확장의 형태로 DB를 증설합니다. 수직적으로 확장된 데이터베이스는 관리가 어려워질 수 있는 데에 반해, NoSQL은 수평적 확장의 형태로 증설하므로, 이론상 무한대로 서버를 계속 분산시켜 DB를 증설할 수 있습니다.
 
-```jsx
-npx sequelize-cli init
-```
-init 명령어를 작성하고 나면 config, models, migrations, seeders 폴더가 자동으로 만들어진다
+3. 빠르게 서비스를 구축하고 데이터 구조를 자주 업데이트 하는 경우
 
-이제 MYSQL에 데이터베이스를 생성하고 연결하기 위해서
-여기서 models > index.js 폴더와 config > config.json폴더를 살펴봐야한다
+NoSQL 데이터베이스의 경우 스키마를 미리 준비할 필요가 없어서, 개발을 빠르게 해야 하는 경우에 매우 적합합니다. 시장에 빠르게 프로토타입을 출시해야 하는 경우나, 소프트웨어 버전별로 많은 다운타임(데이터베이스의 서버를 오프라인으로 전환하여 작업하는 시간) 없이 데이터 구조를 자주 업데이트해야 하는 경우에는 일일이 스키마를 수정해 주어야 하는 관계형 데이터베이스 보다 NoSQL 기반의 비관계형 데이터베이스가 더 효율적입니다.
 
-**config > config.json**
-
-폴더를 들어가게 되면 development, test, production 의 세가지 환경으로 데이터베이스를 연결 할 수 있고
-지금은 development 개발환경과 연결하기 때문에 development의 password와 database두개를 바꿔주면 된다
-```jsx
-{
-  "development": {
-    "username": "root",
-    "password": "****", // mysql 비밀번호로 바꿔주자 따옴표 필수
-    "database": "database_development", // 사용하고싶은 데이터베이스 이름으로 바꿔주면 된다 
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  },
-  "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  },
-  "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  }
-}
-```
-**models > index.js**
-
-mysql2 드라이버를 사용해 mysql 과 Sequelize를 연결해주는 코드가 적혀있다
-
-위에서 development 개발환경과 연결한다고 했는데 이 코드에서 지정해주고 있고 변경하면 다른 개발환경으로 변경이 가능하다
-
-const env = process.env.NODE_ENV || 'development';
-
-```jsx
-const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
-const db = {};
-```
-
-
-## 2. 데이터베이스, 모델생성
-여기서 데이터베이스와 모델을 생성하는 두가지 방법이 존재한다
-
-1. mysql에 접속해서 데이터베이스를 생성하고 모델을 생성해도 되고
-2. 모델을 먼저 생성한뒤 데이터베이스를 바로 생성이 가능하다
-
-### 1-1 ) mysql에 접속해서 데이터베이스를 생성하고 모델을 생성하는 방법
-mysql 접속
-```jsx
-mysql -u root -p
-```
-데이터베이스 생성(위에서 사용하기로 한 데이터베이스 이름 작성)
-```jsx
-mysql> create database database_development;
-데이터베이스 사용
-```
-```jsx
-mysql> use database_development;
-```
-데이터베이스 연결 끝 -> 모델 생성 (데이터베이스의 테이블)
-(얘는 mysql에서 작성하는게 아니라 그냥 터미널에서 작성해야 된다)
-```jsx
-npx sequelize-cli model:generate --name url --attributes url:string,title:string,visits:integer
-```
-
-### 1-2 ) 모델을 먼저 생성한뒤 데이터베이스를 바로 생성하는 방법
-모델 생성
-```jsx
-npx sequelize-cli model:generate --name url --attributes url:string,title:string,visits:integer
-```
-데이터베이스 생성
-```jsx
-npx sequelize-cli db:create
-```
-db:create 명령어를 쓰면 데이터베이스 이름을 작성해주지 않아도
-config.json 폴더에서 지정해준 데이터 베이스이름으로 생성이 되기 때문에 자동으로 database_development 라는 데이터베이스가 생성이 되는 것을 볼 수있다
-
-2) Migration (db에 데이터 반영)
-```jsx
-npx sequelize-cli db:migrate
-```
-
-
-마이그레이션 전에 database_development로 들어가게 되면 아무런 데이터가 없다 마이그레이션으로 만들어준 모델의 데이터를 db로 저장시켜 줘야 한다 , 그리고 만든 모델을 업데이트 할 때도 db에 적용이 되어야 하기 때문에 그때도 Migration을 해줘야 한다
-
-마이그레이션을 하면 async up 에 정의된 코드가 실행되고
-만약 모델을 잘 못 짜서 다시 만들어야 한다고 하면 undo를 해서 async down가 실행되어서 테이블을 지우면 된다
-
-2-1) undo
-
-만약 visits 필드에 기본값을 추가하기 전에 마이그레이션을 했다면 모델을 변경할때는 다시 undo를 한 다음에 수정 -> 다시 마이그레이션을 해야한다
-이때 20220218...-crate-url.js 이 파일을 삭제하고 다시 마이그레이션 하게 된다면 마이그레이션을 할 때도 깃처럼 로그가 다 남기 때문에 에러가 난다 꼭 undo를 해줘야 한다
-
-```jsx
-npx sequelize-cli db:migrate:undo
-```
-model > url.js에서 기본값을 추가한 다음에 다시
-```jsx
-npx sequelize-cli db:migrate  
-```
-20220218...-crate-url.js 파일에도 defaultValue: 0 값을 추가
-
-
+NoSQL의 장점 및 특징에 대해서 이해할 수 있다.
+MongoDB의 도큐먼트(Document)와 컬렉션(Collection)에 대해 이해할 수 있다.
+JSON과 BSON의 차이점을 이해하고, 도큐먼트를 가져오거나 내보낼 수 있다.
+MongoDB의 Atlas에 대해 이해할 수 있다
+클러스터(Cluster)와 레플리카 세트(Replica set)에 대해 이해할 수 있다.
+Atlas를 GUI(Graphical User Interface)와 shell 쿼리문으로 사용할 수 있다.
+MongoDB에서 CRUD를 할 수 있다.
+Insert(C), Find(R), Update(U), Delete(D)에 대한 쿼리문을 작성할 수 있다.
+연산자와 프로젝션(Projection)을 사용할 수 있다.
+배열과 서브 도큐먼트를 쿼리할 수 있다.
+Aggregation Framework를 사용하여 aggregate 명령어로 쿼리할 수 있다.
+$match, $project, $group 연산자를 사용할 수 있다.
