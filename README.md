@@ -1,32 +1,69 @@
-Axios 란?
-Axios는 브라우저, Node.js를 위한 Promise API를 활용하는 HTTP 비동기 통신 라이브러리 아다.
-쉽게 말해서 백엔드랑 프론트엔드랑 통신을 쉽게하기 위해 Ajax와 더불어 사용한다.
-이미 자바스크립트에는 fetch api가 있지만, 프레임워크에서 ajax를 구현할땐 axios를 쓰는 편이라고 보면 된다.
+바로 직전의 통신도 기억 못하는 HTTP
+HTTP는 stateless한 특성을 가지기 때문에 각 통신의 상태는 저장되지 않습니다.
+하지만 우리가 웹 서비스를 사용할 때를 생각해봅시다.
+매번 새 페이지를 요청할때마다 로그인을 해야 한다면 사용이 불가능할 것입니다.
 
+기억하는 척 하기 위해 사용되는 세션과 토큰
+이 문제를 해결하기 위한 대표적인 도구 두 가지가 바로 세션(Session)과 토큰(Token)입니다.
 
-axios 요청(request) 파라미터 옵션
+유저가 로그인을 시도할 때 서버상에서 일치하는 유저 정보를 찾았다면 
+인증(Authentication) 확인의 표시로 세션이나 토큰을 발급/전달해줍니다.
+그럼 웹 브라우저 측에서 해당 세션/토큰 정보를 받아 간직하고 있다가
+새로운 request를 보낼 때마다 인가(Authorization)를 위해 해당 세션/토큰을 함께 보냅니다.
+ 
 
-method : 요청방식. (get이 디폴트)
-url : 서버 주소
-baseURL : url을 상대경로로 쓸대 url 맨 앞에 붙는 주소.
-예를들어, url이 /post 이고 baseURL이 https://some-domain.com/api/ 이면,
-https://some-domain.com/api/post로 요청 가게 된다.
-headers : 요청 헤더
-data : 요청 방식이 'PUT', 'POST', 'PATCH' 해당하는 경우 body에 보내는 데이터
-params : URL 파라미터 ( ?key=value 로 요청하는 url get방식을 객체로 표현한 것)
-timeout : 요청 timeout이 발동 되기 전 milliseconds의 시간을 요청. timeout 보다 요청이 길어진다면, 요청은 취소되게 된다.
-responseType : 서버가 응답해주는 데이터의 타입 (arraybuffer, documetn, json, text, stream, blob)
-responseEncoding : 디코딩 응답에 사용하기 위한 인코딩 (utf-8)
-transformRequest : 서버에 전달되기 전에 요청 데이터를 바꿀 수 있다.
-요청 방식 'PUT', 'POST', 'PATCH', 'DELETE' 에 해당하는 경우에 이용 가능
-배열의 마지막 함수는 string 또는 Buffer, 또는 ArrayBuffer를 반환합
-header 객체를 수정 가능
-transformResponse : 응답 데이터가 만들어지기 전에 변환 가능
-withCredentials : cross-site access-control 요청을 허용 유무. 이를 true로 하면 cross-origin으로 쿠키값을 전달 할 수 있다.
-auth : HTTP의 기본 인증에 사용. auth를 통해서 HTTP의 기본 인증이 구성이 가능
-maxContentLength: http 응답 내용의 max 사이즈를 지정하도록 하는 옵션
-validateStatus : HTTP응답 상태 코드에 대해 promise의 반환 값이 resolve 또는 reject 할지 지정하도록 하는 옵션
-maxRedirects : node.js에서 사용되는 리다이렉트 최대치를 지정
-httpAgent /  httpsAgent : node.js에서 http나 https를 요청을 할때 사용자 정의 agent를 정의하는 옵션
-proxy : proxy서버의 hostname과 port를 정의하는 옵션
-cancelToken : 요청을 취소하는데 사용되어 지는 취소토큰을 명시
+1. Session 기반 인증
+
+세션 기반인증을 위해 Session 과 Cookie 가 사용된다. 다음 Flow 로 인증 절차가 진행된다.
+
+ 
+ - 유저가 로그인을 하고 세션이 서버 메모리 상에 저장된다. 이 때 세션을 식별하기 위한 Session Id 를 기준으로 정보를 저장한다.
+ - 브라우저에 쿠키로 Session Id 가 저장된다.
+ - 쿠키에 정보가 담겨있기 때문에 브라우저는 해당 사이트에 대한 모든 Request 에 Session Id 를 쿠키에 담아 전송한다.
+ - 서버는 클라이언트가 보낸 Session Id 와 서버 메모리로 관리하고 있는 Session Id 를 비교하여 Verification 을 수행한다.
+
+ 
+
+Session 기반 인증은 다음과 같은 장단점을 갖는다.
+
+ 
+
++ 세션 기반 인증 방식은 구현이 상당히 명확하다는 장점이 있다. 또한 실제 서버에서 로그인 상태 확인이 굉장히 유용하다.
++ 상대적으로 안전하다. 서버측에서 관리하기 때문에 클라이언트 변조에 영향받거나 데이터의 Stale (손상) 우려가 없다.
+- 유저들의 세션에 대한 정보를 서버 메모리에 들고 있게 된다는 부담이 있다.
+- 서버 메모리에 세션 정보가 저장되기 때문에 Scale Out / Scale In 이 부담이 될 수 있으며, 결국에는 유저 상태에 무관하게 동작할 수 있도록 Data-Driven 아키텍처가 요구된다.
+- 멀티 디바이스 환경에서 로그인 시 신경써줘야할 부분들이 생긴다. 
+
+ 
+
+2. Token 기반 인증
+
+Token 기반 인증의 방법으로 많은 웹 서버들은 JWT(JSON Web Token) 을 사용한다.
+Token 기반 인증 방식과 Session 기반 인증 방식의 가장 큰 차이점은 유저의 정보가 서버에 저장되지 않는다는 점이다.
+Flow 는 다음과 같다.
+
+ 
+
+ - 유저가 로그인을 하고 서버에 세션을 이용해서 정보를 기록하는대신, Token 을 발급한다.
+ - 클라이언트는 발급된 Token 을 저장한다 (일반적으로 local storage 에 저장한다.)
+ - 클라이언트는 요청 시 저장된 Token 을 Header 에 포함시켜 보낸다. 
+ - 서버는 매 요청시 클라이언트로부터 전달받은 Header 의 Token 정보를 Verification 한 뒤, 해당 유저에 권한을 인가한다.
+
+ 
+Flow 에서 차이를 확인할 수 있듯, Session 기반 서버가 서버측에 정보를 기록하는 반면, Token 기반 인증은 Token 에 대한 Verification 만 수행할 뿐 저장은 클라이언트에서 수행한다.
+
+Token 기반 인증은 다음과 같은 장단점을 갖는다.
+
+ 
++ 클라이언트에 저장되기 때문에 서버의 메모리에 부담이 되지않으며 Scale 에 있어 대비책을 고려할 필요가 없다
++ 멀티 디바이스 환경에 대한 부담이 없다.
+- 상대적으로 Stale (손상) 의 위험이 크다.
+- 결국 구현을 하다보면 서버측에 token blacklist 를 관리하게 될 가능성이 있고 그렇게 되면 서버측 메모리의 소모가 발생하게 된다
+- Token 은 일반적으로 Session ID 보다 길다.
+- XSS 공격에 취약할 수 있어 가능한 민감한 정보는 포함시키지 않을 필요가 있다.
+
+ 
+
+최근에는 Scaling 이슈와 멀티 디바이스 이슈로 Token 방식이 좀 더 핫한 느낌이지만, Session 방식도 여전히 많이 쓰인다.
+
+두 방식 모두 장단점이 있기 때문에 적합한 구조를 선택하는 것이 좋겠다.
